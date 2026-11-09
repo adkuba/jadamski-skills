@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="color-scheme" content="light dark">
+  <meta name="referrer" content="no-referrer">
+  <title>{{TITLE}} · implementation report</title>
+  <!--
+    How to fill this template (delete this comment from the finished report)
+    - Replace every {{PLACEHOLDER}}. Plain-text slots must be HTML-escaped. *_HTML slots
+      take authored markup; escape any task or source text you put inside them.
+    - STATE is "complete" (everything planned is done and verified) or "attention"
+      (something failed, is blocked, or is left for the user). Choose it from the evidence.
+    - Delete sections that have nothing to say, and their nav links. When done, searching the
+      file for "{{" must find nothing.
+    - Shapes the slots expect (copy and repeat):
+        RESULT    <div class="result"><span>Backend tests</span><strong class="pass">617 passed</strong></div>
+                  <div class="result"><span>Native build</span><strong class="attention">not run</strong></div>
+        DECISION  <tr><td>Tokens are opaque, kept in memory</td><td><span class="tag you">You</span></td><td>Restart signs users out; deploys are rare</td></tr>
+                  (use <span class="tag auto">Auto phase</span> for decisions made while unattended)
+        REVIEW    <li><code>path/to/File.kt</code>: what to look for here</li>
+        STEP      <li><p>What to do</p><pre>command</pre><p class="expect">Expected: …</p></li>
+        LOOP      <tr><td>1</td><td>Broad review</td><td>0</td><td>2</td><td>11</td><td><code>9a8b7c6</code></td><td>…</td></tr>
+  -->
+  <style>
+    :root { color-scheme:light dark; --bg:light-dark(#fff,#191b20); --fg:light-dark(#242830,#edf0f5); --muted:light-dark(#626b79,#afb7c4); --line:light-dark(#dfe4eb,#3a414d); --soft:light-dark(#f3f5f8,#242933); --accent:light-dark(#334d77,#b0c8ed); --good:light-dark(#2c6241,#a6d2b5); --warn:light-dark(#87511a,#e8bf86); }
+    * { box-sizing:border-box; }
+    body { margin:0; background:var(--bg); color:var(--fg); font:16px/1.65 system-ui,-apple-system,"Segoe UI",sans-serif; }
+    main { width:min(920px,100% - 48px); margin:0 auto; padding:40px 0 56px; }
+    .eyebrow,.meta,footer { font-size:13px; color:var(--muted); }
+    .eyebrow { letter-spacing:.09em; text-transform:uppercase; }
+    h1 { font-size:clamp(30px,5vw,44px); line-height:1.15; letter-spacing:-.025em; margin:24px 0 14px; }
+    h2 { font-size:22px; line-height:1.3; margin:0 0 16px; }
+    h3 { font-size:16px; margin:20px 0 8px; }
+    p { margin:0 0 15px; }
+    a { color:var(--accent); text-underline-offset:4px; }
+    .lead { color:var(--muted); font-size:18px; max-width:720px; }
+    .meta { display:flex; align-items:center; flex-wrap:wrap; gap:8px 16px; margin:22px 0; }
+    .status { color:var(--good); font-weight:650; }
+    [data-state="attention"] .status { color:var(--warn); }
+    code { font:.86em ui-monospace,SFMono-Regular,Consolas,monospace; overflow-wrap:anywhere; }
+    .branch { padding:3px 8px; background:var(--soft); border-radius:4px; }
+    nav { display:flex; flex-wrap:wrap; gap:12px 24px; margin-top:24px; padding:15px 0; border-top:1px solid var(--line); border-bottom:1px solid var(--line); font-size:14px; }
+    nav a { text-decoration:none; }
+    section { padding-top:30px; scroll-margin-top:20px; }
+    ul,ol { padding-left:21px; margin:0 0 16px; }
+    li { margin-bottom:8px; }
+    .start { background:var(--soft); border-left:3px solid var(--accent); padding:14px 18px; border-radius:0 5px 5px 0; margin-top:26px; }
+    .start strong { display:block; font-size:13px; letter-spacing:.06em; text-transform:uppercase; color:var(--muted); margin-bottom:4px; }
+    .start p:last-child { margin-bottom:0; }
+    .steps > li { margin-bottom:16px; }
+    .steps pre { margin:6px 0; }
+    .expect { color:var(--muted); font-size:14px; margin:4px 0 0; }
+    .results { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:0 26px; }
+    .result { display:flex; justify-content:space-between; gap:12px; align-items:baseline; border-bottom:1px solid var(--line); padding:11px 0; font-size:14px; }
+    .result strong { white-space:nowrap; }
+    .pass { color:var(--good); }
+    .attention { color:var(--warn); }
+    .muted { color:var(--muted); font-size:14px; }
+    .tag { display:inline-block; font-size:12px; padding:1px 7px; border-radius:10px; border:1px solid var(--line); white-space:nowrap; }
+    .tag.you { color:var(--accent); }
+    .tag.auto { color:var(--warn); }
+    details { margin-top:18px; padding-top:14px; border-top:1px solid var(--line); }
+    summary { color:var(--accent); cursor:pointer; font-size:14px; font-weight:600; }
+    details[open] summary { margin-bottom:15px; }
+    .table-wrap { overflow-x:auto; }
+    table { width:100%; border-collapse:collapse; font-size:14px; }
+    th,td { text-align:left; padding:10px 12px 10px 0; vertical-align:top; border-bottom:1px solid var(--line); overflow-wrap:anywhere; }
+    th { color:var(--muted); font-weight:500; }
+    pre { background:var(--soft); padding:12px 14px; border-radius:5px; white-space:pre-wrap; overflow-wrap:anywhere; font:13px/1.5 ui-monospace,SFMono-Regular,Consolas,monospace; }
+    figure { margin:16px 0; }
+    img { display:block; max-width:100%; height:auto; border:1px solid var(--line); border-radius:5px; }
+    figcaption { color:var(--muted); font-size:13px; margin-top:8px; }
+    footer { border-top:1px solid var(--line); margin-top:30px; padding-top:18px; }
+    @media(max-width:620px) { main { width:calc(100% - 32px); padding-top:24px; } .results { grid-template-columns:1fr; } }
+    @media print { :root { color-scheme:light; --bg:#fff; --fg:#222; --muted:#555; --line:#ddd; --soft:#f4f4f4; --accent:#333; } body { font-size:11pt; } main { width:100%; padding:0; } nav { display:none; } h1 { font-size:30pt; } details:not([open]) { display:none; } }
+  </style>
+</head>
+<body>
+<main data-state="{{STATE}}">
+  <header>
+    <div class="eyebrow">{{APPLICATION}} · {{TICKET_OR_NUMBER}} · {{DATE}}</div>
+    <h1>{{TITLE}}</h1>
+    <p class="lead">{{SUMMARY}}</p>
+    <div class="meta"><span class="status">{{STATUS}}</span><code class="branch">{{BRANCH}}</code><span>{{DELIVERY_STATE}}</span></div>
+    <div class="start"><strong>Try it first</strong>{{QUICK_CHECK_HTML}}</div>
+    <nav aria-label="Report contents"><a href="#changes">What changed</a><a href="#decisions">Decisions</a><a href="#review">How to review</a><a href="#test">How to test</a><a href="#validation">Validation</a><a href="#left">Left for you</a></nav>
+  </header>
+
+  <section id="changes">
+    <h2>What changed</h2>
+    {{CHANGES_HTML}}
+    <h3>How it works</h3>
+    {{IMPLEMENTATION_HTML}}
+  </section>
+
+  <section id="decisions">
+    <h2>Decisions</h2>
+    <p class="muted">Yours from the design discussion, and the ones made during the unattended run. Each auto-phase decision says how to change it.</p>
+    <div class="table-wrap"><table>
+      <thead><tr><th>Decision</th><th>By</th><th>Why, or how to change it</th></tr></thead>
+      <tbody>{{DECISIONS_ROWS_HTML}}</tbody>
+    </table></div>
+  </section>
+
+  <section id="review">
+    <h2>How to review</h2>
+    <p class="muted">Suggested reading order. Start with the files where a mistake would hurt most.</p>
+    <ol>{{REVIEW_ORDER_HTML}}</ol>
+    <details><summary>File map</summary>{{FILE_MAP_HTML}}</details>
+  </section>
+
+  <section id="test">
+    <h2>How to test it yourself</h2>
+    <ol class="steps">{{TEST_STEPS_HTML}}</ol>
+  </section>
+
+  <section id="validation">
+    <h2>Validation</h2>
+    <div class="results">{{VALIDATION_RESULTS_HTML}}</div>
+    <p class="muted" style="margin-top:16px">{{VALIDATION_SCOPE}}</p>
+    <details><summary>Review loops</summary>
+      <div class="table-wrap"><table>
+        <thead><tr><th>Loop</th><th>Focus</th><th>Critical</th><th>Important</th><th>Minor</th><th>Fix commits</th><th>Notable</th></tr></thead>
+        <tbody>{{LOOP_ROWS_HTML}}</tbody>
+      </table></div>
+    </details>
+    <details><summary>Commits</summary>{{COMMITS_HTML}}</details>
+    <details><summary>Commands and evidence</summary>{{EVIDENCE_HTML}}</details>
+    <details><summary>Screenshots</summary>{{SCREENSHOTS_HTML}}</details>
+  </section>
+
+  <section id="left">
+    <h2>Left for you</h2>
+    {{LEFT_FOR_YOU_HTML}}
+  </section>
+
+  <footer>{{FOOTER}}</footer>
+</main>
+</body>
+</html>

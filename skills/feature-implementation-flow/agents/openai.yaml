@@ -1,0 +1,4 @@
+interface:
+  display_name: "Feature Implementation Flow"
+  short_description: "Shape a feature with you, then build, review, test and report it unattended"
+  default_prompt: "Use $feature-implementation-flow for this feature: shape the design with me, and after I approve, run the auto phase (spec, plan, implementation with small commits, up to 4 review/test/fix loops) and finish with an HTML report I can review and test from."

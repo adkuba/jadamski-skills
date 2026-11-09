@@ -1,0 +1,21 @@
+{
+  "name": "jadamski-skills",
+  "version": "1.2.0",
+  "description": "Personal agent skills: feature-implementation-flow (shape a feature together, then an unattended spec, implementation, review/test loops and report) and uzupelnij-notatki (catch up on daily work notes in an Obsidian vault from GitLab, Slack, Calendar and Jira activity; Claude Code only).",
+  "author": {
+    "name": "jadamski"
+  },
+  "keywords": ["skills", "workflow", "feature", "planning", "code-review", "autonomous"],
+  "skills": "./skills/",
+  "hooks": {},
+  "interface": {
+    "displayName": "jadamski skills",
+    "shortDescription": "Feature delivery workflow: shape together, build unattended, report",
+    "developerName": "jadamski",
+    "category": "Developer Tools",
+    "capabilities": ["Interactive", "Read", "Write"],
+    "defaultPrompt": [
+      "Let's design and implement this feature with the feature implementation flow."
+    ]
+  }
+}
