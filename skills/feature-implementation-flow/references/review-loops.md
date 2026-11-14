@@ -12,19 +12,42 @@ The stop rule counts only critical and important findings. Minor findings are
 fixed in the loop that found them, or recorded as left over when they aren't
 worth it.
 
+## Independent reviewer context
+
+Spawn a new reviewer for each loop, with no inherited transcript. Do not reuse an
+implementer or an agent that participated in an earlier review or testing loop.
+Use the harness's fresh-context option; see
+[harness-notes.md](harness-notes.md). If that isolation is unavailable, disclose
+the limitation rather than claiming an independent review.
+
+Give it approved behavior, decisions and acceptance criteria, necessary repository
+instructions, and the current feature branch with its base. Review the entire
+feature delta, including fixes already present, rather than only the latest fix
+commit. Do not send implementation commentary, prior reviewer messages, findings,
+verdicts, fix summaries, Progress, loop logs or the implementation report.
+Exclude artifacts containing review history from supplied diffs as well.
+
+If the spec shares a file with the plan or review history, extract the approved
+requirements into a clean read-only packet in the task scratch directory. Give
+the reviewer that packet, not the combined document or a link back to it. Tell
+it to avoid review-history artifacts in the shared checkout. Product code and
+regression tests remain available as evidence; this limits priming but does not
+guarantee freedom from bias.
+
 ## Reviewer brief
 
-Give every reviewer a fresh context and this shape of brief. Fill in the
-brackets and leave out your own opinion of the code.
+Fill in the brackets without adding conclusions or earlier findings.
 
 ```text
 Review the implementation of <feature> on branch <branch> (diff against <base>).
-Spec: <path>. Plan with progress and earlier loop logs: <path>.
+Approved requirements: <clean spec path or extracted requirements packet>.
 Repository instructions: <CLAUDE.md / AGENTS.md path>.
 
-This is review loop <n> of at most 4. Focus: <loop focus from the table in SKILL.md,
-plus any weak area found earlier>. Earlier loops already fixed: <one line per fix,
-so you don't re-report them>.
+Focus: <loop focus from the table in SKILL.md>. Inspect the full current feature
+implementation delta against the base, including existing fixes. Form your own
+conclusions from the approved requirements and actual code. Do not read Progress, loop logs,
+earlier reviews, fix summaries or implementation reports; they are not review
+inputs.
 
 Read the actual code; run tests or the application if that helps you confirm a
 finding. Do not edit product files. Temporary files go under <scratch dir>.
@@ -59,6 +82,10 @@ excerpt or screenshot path). List anything you could not exercise and why.
 
 ## Evaluating findings
 
+- After the independent review is returned, the primary agent compares it with
+  earlier findings and fixes, deduplicates reports and reopens unresolved defects.
+  Verify earlier fixes with targeted regression checks; do not send their history
+  to the next reviewer to prevent duplicate reports.
 - Verify each finding against the code before fixing it. A reviewer can be wrong;
   say so in the loop log with the reason.
 - Fix root causes, not the symptom a reviewer happened to hit. For example,

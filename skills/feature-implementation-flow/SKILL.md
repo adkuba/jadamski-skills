@@ -1,11 +1,12 @@
 ---
 name: feature-implementation-flow
-description: "Use when the user wants a substantial feature or ticket delivered end to end: shaped together first, then built unattended after their approval (\"proceed to auto implementation\", \"spec, implement, review loops, report\", \"implement it while I'm away\"), or when resuming such a run after a reset, compaction or session time limit. Not for questions, standalone code reviews or small edits unless the user asks for this flow."
+description: "Use when the user asks for feature-implementation-flow, wants a substantial feature or ticket delivered end to end, or resumes such a run after an interruption. First assess scope: implement small, clear, low-risk changes directly; otherwise shape together, then build unattended after approval with a spec, plan, independent review/test/fix loops and HTML report. Not for questions or standalone code reviews."
 ---
 
 # Feature Implementation Flow
 
-A feature is delivered in two modes with one approval between them:
+Start with the quick evaluation in Phase 0. When the full flow is warranted,
+deliver the feature in two modes with one approval between them:
 
 1. **Shaping (interactive).** Explore the code, ask the questions that matter,
    design the feature with the user until they approve it.
@@ -23,8 +24,8 @@ Tool names differ between Claude Code and Codex: see
 ## Resuming? Start here
 
 If this task already has a plan with a Progress section, or the conversation
-summary mentions one, you are resuming. Don't restart, re-plan or re-ask for
-approval.
+summary mentions one, you are resuming. Don't repeat Phase 0, restart, re-plan
+or re-ask for approval.
 
 1. Restore the checkout. Cloud and container workspaces can come back reset to
    the default branch: fetch and check out the feature branch named in the
@@ -37,6 +38,33 @@ If the branch exists nowhere (it was never pushed and the workspace was wiped),
 say so plainly. Then rebuild from the spec and plan files if they survived, or
 from the conversation summary if they didn't, starting at the first task. Note
 the loss in the report.
+
+## Phase 0: Quick scope evaluation
+
+Before shaping a new task, briefly inspect the request, repository instructions,
+relevant code and tests, and Git state. Decide from scope, uncertainty and risk;
+file count or estimated duration alone is not a useful threshold.
+
+- **Direct implementation:** the behavior is clear, the change is localized and
+  follows existing patterns, and verification is straightforward. Examples:
+  adding a field to an existing view, a small validation rule, or a focused bug
+  fix without broader contract or data changes.
+- **Full flow:** meaningful product or architecture decisions remain, several
+  layers or systems need coordinated changes, a substantial user flow is added,
+  or the work materially changes contracts, authorization, persistent data or
+  rollout behavior. A small diff can still need this route because of its risk.
+
+State the route and its main reason in one sentence, then proceed. An invocation
+of this skill alone still gets this evaluation; an explicit request for the full
+flow or particular phases takes precedence. If a material uncertainty remains
+after the brief inspection, use the full flow to resolve it during shaping.
+
+For direct implementation, implement the requested change, run proportionate
+checks and give a short result with validation and limitations. Skip the remaining
+phases: no skill-required shaping approval, preview, separate branch, spec/plan,
+checkpoint commits, review loops or HTML report. Repository instructions and user
+requirements still apply. If implementation reveals scope or risk that warrants
+the full flow, state why and move to Phase 1, preserving the work already done.
 
 ## Phase 1: Shape the feature with the user
 
@@ -170,10 +198,13 @@ behavior after approval need renewed agreement (see "Decide, record, continue").
 
 Each loop runs these steps:
 
-1. **Review.** A fresh subagent gets the spec, the branch or diff and the
-   repository context, but not your opinion of the code. It reports findings with
-   severity, file and line, and a reproduction or reasoning. Briefs and the
-   severity scale are in [references/review-loops.md](references/review-loops.md).
+1. **Review.** Spawn a new reviewer for every loop, separate from implementation
+   and all earlier reviews, with no inherited conversation. Give it approved
+   requirements, the full current feature diff against its base, and necessary
+   repository context. Withhold implementation commentary, Progress and review
+   logs, previous findings, fix summaries and verdicts. It reports findings with
+   severity, file and line, and a reproduction or reasoning. Context isolation
+   and briefs are in [references/review-loops.md](references/review-loops.md).
 2. **Real testing.** Exercise the running application against the spec through
    its real consumers: happy paths, boundaries, permissions, cancellation and
    failure behavior. This can run in parallel with the review. One owner controls
@@ -182,9 +213,12 @@ Each loop runs these steps:
    finding on its merits, fix the justified ones, then rerun the affected checks
    and scenarios.
 4. **Record and commit.** Log findings, fixes, checks and leftovers in the
-   Progress section, and commit.
+   Progress section, along with the reviewer identity, fresh-context status and
+   reviewed base/head commits, and commit. Keep this log out of later reviewers'
+   context.
 
-Shift the focus each loop, unless a loop exposes a weak area worth another pass:
+Shift the review focus each loop as below. The primary agent can target further
+tests at weaknesses found earlier without passing those findings to reviewers:
 
 | Loop | Focus |
 |------|-------|
@@ -248,4 +282,5 @@ open issues). Don't paste the report or offer another implementation round.
 | "Only minor findings: one more loop" | Fix them in this loop and stop. |
 | "Loop 4 still found things: one more" | Stop and report them. |
 | "I'll tell the reviewer it looks correct" | Give it the spec and the diff, and let it reach its own conclusion. |
+| "I'll reuse the reviewer or send last loop's findings" | Spawn a new reviewer with clean requirements and the full current diff; reconcile findings yourself afterward. |
 | "This choice is small enough to skip recording" | Record it: the user reviews decisions, not diffs. |

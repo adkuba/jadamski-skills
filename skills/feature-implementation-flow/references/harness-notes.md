@@ -8,7 +8,7 @@ actual tool list disagrees with this table, trust the tool list.
 | Ask a multiple-choice question | `AskUserQuestion` (recommended option first), or a plain message with lettered options | A plain message with lettered options |
 | Track tasks during a session | The task or todo tools (`TaskCreate`/`TaskUpdate`, `TodoWrite` in older versions) | `update_plan` |
 | Dispatch a reviewer with a fresh context | `Agent` tool (`general-purpose`); `run_in_background: true` to run reviewer and tester in parallel | `spawn_agent` with `fork_turns: "none"`, then `wait_agent` |
-| Continue the same subagent | `SendMessage` to the agent | `followup_task` |
+| Continue an implementation or testing subagent (not a reviewer in a later loop) | `SendMessage` to the agent | `followup_task` |
 | Isolated workspace for a parallel implementer | `Agent` with `isolation: "worktree"`, or `git worktree` | `git worktree`, or the Codex app's worktree mode |
 | Invoke this skill | `/feature-implementation-flow` (`/jadamski-skills:feature-implementation-flow` when installed as a plugin) | `$feature-implementation-flow` (`$jadamski-skills:feature-implementation-flow` when installed as a plugin or symlinked from the repo), or pick it from `/skills` |
 | Deliver the report | An `Artifact` tool, if present (claude.ai sessions): publish the HTML as a private artifact and link it. Otherwise write the file and give its path; a file-sending tool, if present, can attach it. | Write the file and give its path; the Codex app opens local HTML |
@@ -25,8 +25,9 @@ actual tool list disagrees with this table, trust the tool list.
   the limit as the clock in "Watch the clock".
 - **Subagents.** Give reviewers `subagent_type: general-purpose` (or a review
   agent the user defined), a model override only if the user asked for one, and
-  the brief from `review-loops.md`. Background agents notify on completion, so
-  don't poll them.
+  the clean brief from `review-loops.md`. Start a new agent for each review loop;
+  do not resume a prior reviewer or pass it the implementation conversation.
+  Background agents notify on completion, so don't poll them.
 - **Commits.** End commit messages with any attribution lines the harness
   provides.
 - **Artifacts.** When the report is published through an `Artifact` tool, that
@@ -39,7 +40,10 @@ actual tool list disagrees with this table, trust the tool list.
   current versions (`codex features list`). On older versions, add
   `[features] multi_agent = true` to `~/.codex/config.toml`. Spawn reviewers with
   `fork_turns: "none"` so they don't inherit your transcript and your
-  conclusions. Set `model` and `reasoning_effort` together when overriding.
+  conclusions. Spawn a new reviewer each loop; don't use `followup_task` to reuse
+  an earlier reviewer. Pass the clean brief from `review-loops.md`, without plan
+  Progress or earlier review history. Set `model` and `reasoning_effort` together
+  when overriding.
   Wait in long stretches (`wait_agent` with a timeout of 5–10 minutes) instead
   of short polls.
 - **Unattended runs and approvals.** The auto phase stalls if every command

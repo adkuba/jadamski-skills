@@ -65,9 +65,9 @@ Next: Task 4, wire the token endpoint into the controller (updated 2026-11-05 22
 - (none)
 
 ### Loop log
-| Loop | Focus | Critical | Important | Minor | Fix commits | Notes |
-|------|-------|----------|-----------|-------|-------------|-------|
-| 1 | Broad review | 0 | 2 | 11 | 9a8b7c6 | real client rejected `title: null` in tool list |
+| Loop | Focus | Reviewer / fresh context | Reviewed base..head | Critical | Important | Minor | Fix commits | Notes |
+|------|-------|--------------------------|---------------------|----------|-----------|-------|-------------|-------|
+| 1 | Broad review | <agent-id> / yes | <base-sha>..<head-sha> | 0 | 2 | 11 | 9a8b7c6 | real client rejected `title: null` in tool list |
 
 ### Deviations from the spec
 - None yet.
@@ -80,3 +80,6 @@ Rules:
 - Unchecked loops that the stop rule made unnecessary are marked
   `- [~] Loop 3: not needed (loop 2 found no critical or important issues)`.
 - Record times with a timezone, so a later reader can reconstruct the timeline.
+- Progress and loop logs are for the primary agent and resumption, not reviewer
+  inputs. If the spec and plan share a file, extract clean approved requirements
+  for reviewers as described in [review-loops.md](review-loops.md).

@@ -7,7 +7,7 @@ and `agents/openai.yaml` for Codex's display metadata).
 
 | Skill | Use it for |
 |-------|------------|
-| [`feature-implementation-flow`](skills/feature-implementation-flow/SKILL.md) | Delivering a substantial feature end to end. You shape the design together with the agent; after your approval it runs unattended (spec, plan, implementation in small commits, up to 4 review/test/fix loops) and finishes with an HTML report that tells you how to review and test the work. It survives resets and session limits by resuming from the plan's Progress section. |
+| [`feature-implementation-flow`](skills/feature-implementation-flow/SKILL.md) | First sizes the task: small, clear changes are implemented directly with proportionate checks. Substantial or risky features use the full flow: shape the design together, then after approval run unattended (spec, plan, implementation in small commits, up to 4 review/test/fix loops with a fresh independent reviewer each time) and finish with an HTML report. It survives resets and session limits by resuming from the plan's Progress section. |
 | [`uzupelnij-notatki`](skills/uzupelnij-notatki/SKILL.md) | Catching up on daily work notes in an Obsidian vault (`RRRR/MM-miesiąc/DD-DD/DD.MM.RRRR.md`), one working day at a time, from GitLab (`glab`), Slack, Google Calendar and Jira/Confluence activity. The first run sets up your personal config and, if you have no notes yet, your first note (see [Use](#uzupelnij-notatki)). Written in Polish. **Claude Code only**: it relies on Claude Code's MCP tools and `ToolSearch`. Optional argument: the last filled-in day (`DD.MM.RRRR`). |
 
 ## Install
@@ -121,15 +121,20 @@ Ask for a skill in your own words, or name it.
 
 A typical run:
 
-1. The agent explores the code and asks one question at a time, each with
-   options and a recommendation.
-2. It presents the design in sections and waits for your explicit approval
+1. The agent briefly evaluates scope, uncertainty and risk. Small, clear changes
+   are implemented directly and checked, without the remaining phases. An explicit
+   request for the full flow takes precedence.
+2. For the full flow, the agent explores the code and asks one question at a
+   time, each with options and a recommendation.
+3. It presents the design in sections and waits for your explicit approval
    ("proceed to auto implementation").
-3. Unattended, it writes the spec and plan, implements in small commits, tests
-   with real clients and runs up to four review/test/fix loops. It decides
+4. Unattended, it writes the spec and plan, implements in small commits, tests
+   with real clients and runs up to four review/test/fix loops. Each loop gets a
+   new reviewer without the implementation conversation or previous review
+   findings; the primary agent reconciles findings afterward. It decides
    reversible details itself and records them, and parks anything risky as a
    question.
-4. You get an HTML report: what changed, the decisions, a reading order for code
+5. You get an HTML report: what changed, the decisions, a reading order for code
    review, step-by-step test instructions, the evidence, and what's left for you.
 
 If the session is reset or hits its time limit, start a new one with "resume
@@ -192,6 +197,16 @@ codex plugin marketplace add "$PWD" && codex plugin list
 ```
 
 ## Changelog
+
+### 1.3.0 (2026-11-14)
+
+- **Quick scope evaluation.** Choose direct implementation for small, clear,
+  low-risk changes, or the full flow for substantial or risky features. Explicit
+  full-flow requests and approved runs keep their agreed route.
+- **Independent reviews.** Every loop uses a new reviewer without inherited
+  implementation context or previous findings, fix summaries and verdicts.
+  Combined spec/plan files get a clean requirements extract; the primary agent
+  reconciles findings and checks earlier fixes after the independent review.
 
 ### 1.2.0 (2026-11-09)
 
